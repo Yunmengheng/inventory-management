@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getUserFromRequest, type AuthUser } from "./auth";
+import { getUserFromRequest, type AuthUser } from "./auth/user";
 
 export class HttpError extends Error {
   status: number;

@@ -1,9 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { authClient } from "@/lib/auth/client";
 import { api } from "@/lib/client";
 import { SettingsProvider } from "@/lib/settings";
-import { clearToken, getToken, setToken } from "@/lib/storage";
+import { clearToken } from "@/lib/storage";
 import type { AuthUser } from "@/lib/types";
 
 type AuthValue = {
@@ -31,10 +32,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
     let cancel = false;
     api<AuthUser>("/api/auth/me")
       .then((me) => {
@@ -52,18 +49,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string, remember: boolean) => {
-    const result = await api<{ token: string; user: AuthUser }>("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
+    const { error } = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe: remember,
     });
-    setToken(result.token, remember);
-    setUser(result.user);
+    if (error) throw new Error(error.message || "Email or password is incorrect.");
+    setUser(await api<AuthUser>("/api/auth/me"));
   }, []);
 
   const logout = useCallback(() => {
-    clearToken();
-    setUser(null);
-    window.location.href = "/login";
+    void authClient.signOut().finally(() => {
+      clearToken();
+      setUser(null);
+      window.location.href = "/login";
+    });
   }, []);
 
   return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;

@@ -241,6 +241,7 @@ export async function deleteSupplier(id: string, userId: string) {
 
 export async function createUser(input: Record<string, unknown>, actorId: string) {
   const bcrypt = await import("bcryptjs");
+  const { registerNeonAccount } = await import("./auth/accounts");
   const name = asString(input.name);
   const email = asString(input.email).toLowerCase();
   const password = asString(input.password);
@@ -249,6 +250,7 @@ export async function createUser(input: Record<string, unknown>, actorId: string
   if (!email.includes("@")) throw new HttpError(400, "Enter a valid email.");
   if (password.length < 6) throw new HttpError(400, "Password must be at least 6 characters.");
   if (!["ADMIN", "WAREHOUSE_MANAGER", "SALES_MANAGER", "STAFF"].includes(role)) throw new HttpError(400, "Invalid role.");
+  await registerNeonAccount({ name, email, password });
   const user = await prisma.user.create({
     data: {
       name,

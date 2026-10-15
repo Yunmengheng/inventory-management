@@ -32,3 +32,5 @@ npm run db:setup
 ```
 
 `neon init` and `neon deploy` write those variables into `.env`. Do not commit that file.
+
+Sign-in uses Neon Auth (Managed Better Auth). `NEON_AUTH_BASE_URL` is the branch Auth URL, and `NEON_AUTH_COOKIE_SECRET` signs the session cookie. Roles and warehouses still live on the app user, matched by email.

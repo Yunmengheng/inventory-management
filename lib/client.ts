@@ -17,9 +17,9 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   if (!headers.has("Content-Type") && options.body) headers.set("Content-Type", "application/json");
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(path, { ...options, headers, credentials: "include" });
   const data = (await response.json().catch(() => ({}))) as { error?: string };
-  if (response.status === 401 && !path.startsWith("/api/auth/login")) {
+  if (response.status === 401 && path !== "/api/auth/me" && !path.startsWith("/api/auth/sign-")) {
     clearToken();
     if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
       window.location.href = "/login";
